@@ -42,9 +42,9 @@ const REVIEWS = [
 const PRICES = {
   manchester: { name: 'Manchester Airport', oneWay: 90, ret: 170, slug: 'manchester-airport-transfer-blackpool' },
   liverpool: { name: 'Liverpool John Lennon Airport', short: 'Liverpool Airport', oneWay: 95, ret: 180, slug: 'liverpool-airport-transfer-blackpool' },
-  leeds: { name: 'Leeds Bradford Airport', oneWay: 135, ret: 260, slug: 'leeds-bradford-airport-transfer-blackpool' },
-  birmingham: { name: 'Birmingham Airport', oneWay: 215, ret: 420 },
-  newcastle: { name: 'Newcastle Airport', oneWay: 250, ret: 490 },
+  leeds: { name: 'Leeds Bradford Airport', oneWay: 135, ret: 270, slug: 'leeds-bradford-airport-transfer-blackpool' },
+  birmingham: { name: 'Birmingham Airport', oneWay: 215, ret: 430 },
+  newcastle: { name: 'Newcastle Airport', oneWay: 250, ret: 500 },
 };
 
 const FLEET = [

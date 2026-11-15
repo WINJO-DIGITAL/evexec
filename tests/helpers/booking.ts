@@ -14,9 +14,9 @@ export const AIRPORTS = [
 export const PRICES: Record<string, { oneWay: number; return: number }> = {
   'Manchester Airport':     { oneWay: 90,  return: 170 },
   'Liverpool Airport':      { oneWay: 95,  return: 180 },
-  'Leeds Bradford Airport': { oneWay: 135, return: 260 },
-  'Birmingham Airport':     { oneWay: 215, return: 420 },
-  'Newcastle Airport':      { oneWay: 250, return: 490 },
+  'Leeds Bradford Airport': { oneWay: 135, return: 270 },
+  'Birmingham Airport':     { oneWay: 215, return: 430 },
+  'Newcastle Airport':      { oneWay: 250, return: 500 },
 };
 
 export interface BookingPayload {
