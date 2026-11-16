@@ -114,3 +114,40 @@ test('accepting with a phone but no email queues only the text', async () => {
   assert.equal(rows.length, 1);
   assert.ok(!seen.some((u) => u.includes('api.resend.com')), 'no email');
 });
+
+// A failed write must be reported, not silently dropped (the cause of the missing confirmation text).
+test('when the replacement write fails twice, the handoff reports false and does not push', async () => {
+  const f = fake([{ id: 't1', booking_id: booking.id, kind: 'confirmation', message: 'We have received your request', status: 'sent' }]);
+  const realFetch = global.fetch;
+  global.fetch = async (url, opts = {}) => {
+    if ((opts.method || 'GET') === 'PATCH') return { ok: false, status: 500, json: async () => ({}), text: async () => 'boom' };
+    return realFetch(url, opts);
+  };
+  const result = await handOffSmsToOperator(booking, 'Your booking is confirmed', 'confirmation', { supersede: true });
+  assert.equal(result, false);
+  assert.equal(f.rows[0].message, 'We have received your request');
+  assert.equal(pushes(f.calls), 0);
+});
+
+test('a single failed lookup is retried and the confirmed text still replaces the earlier one', async () => {
+  const f = fake([{ id: 't1', booking_id: booking.id, kind: 'confirmation', message: 'We have received your request', status: 'sent' }]);
+  const realFetch = global.fetch;
+  let lookups = 0;
+  global.fetch = async (url, opts = {}) => {
+    if ((opts.method || 'GET') === 'GET' && String(url).includes('/operator_sms_tasks')) {
+      lookups += 1;
+      if (lookups === 1) return { ok: false, status: 503, json: async () => ({}), text: async () => 'unavailable' };
+    }
+    return realFetch(url, opts);
+  };
+  const result = await handOffSmsToOperator(booking, 'Your booking is confirmed', 'confirmation', { supersede: true });
+  assert.equal(result, true);
+  assert.equal(f.rows[0].message, 'Your booking is confirmed');
+  assert.equal(f.rows[0].status, 'pending');
+  assert.equal(pushes(f.calls), 1);
+});
+
+test('a successful confirmed-text handoff reports true', async () => {
+  fake([]);
+  assert.equal(await handOffSmsToOperator(booking, 'Your booking is confirmed', 'confirmation', { supersede: true }), true);
+});

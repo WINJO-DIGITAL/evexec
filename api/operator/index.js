@@ -83,9 +83,14 @@ async function handleAction(req, res) {
     const patch = { status: 'Dispatched', operator_response: 'accepted', operator_responded_at: new Date().toISOString() };
     await dbUpdate('bookings', id, patch);
     await applyToReturnLeg(booking, 'accepted', patch.operator_responded_at);
-    await sendBookingConfirmed({ ...booking, ...patch });
+    const confirmed = await sendBookingConfirmed({ ...booking, ...patch });
+    // The office has to send the text from its own phone, so say so if it could not be queued.
+    if (confirmed.textQueued === false) {
+      const emailNote = booking.customer_email ? 'The customer has been emailed.' : 'There is no email on file for this customer.';
+      return res.end(operatorPage('Accepted, text not queued', `<p>Booking for <strong>${esc(booking.customer_name)}</strong> is accepted, but their confirmation text could not be saved, so it is not in Today → Texts to send.</p><p>${emailNote} Please confirm the booking another way. Ref <strong>${esc(booking.ref)}</strong>.</p>`, false, brand));
+    }
     const price = getPrice(booking);
-    return res.end(operatorPage('Booking Confirmed ✓', `<p>Booking for <strong>${esc(booking.customer_name)}</strong> accepted.</p><p>${esc(route)}<br>${esc(date)} at ${esc(booking.travel_time || 'TBC')}</p>${price ? `<p class="price">£${price}</p>` : ''}<p>The customer has been emailed their booking confirmation with the payment link.</p>`, true, brand));
+    return res.end(operatorPage('Booking Confirmed ✓',`<p>Booking for <strong>${esc(booking.customer_name)}</strong> accepted.</p><p>${esc(route)}<br>${esc(date)} at ${esc(booking.travel_time || 'TBC')}</p>${price ? `<p class="price">£${price}</p>` : ''}<p>The customer has been emailed their booking confirmation with the payment link.</p>`, true, brand));
   } catch (err) { console.error('Operator action error:', err); res.statusCode = 500; return res.end(operatorPage('Error', '<p>Something went wrong. Please try again or contact support.</p>', false)); }
 }
 
