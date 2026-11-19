@@ -6,3 +6,7 @@ node_modules/
 evexecoperator/
 evexecdriverapp/
 tests/browser/out/
+
+# Environment files: never commit real keys. Only the blank template is tracked.
+.env*
+!.env.example
